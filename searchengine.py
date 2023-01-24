@@ -91,6 +91,7 @@ def getquery():
         query = input("Enter a search word: ")
         if len(query) != 0:
             break
+        test_query(query)
 
 
 
