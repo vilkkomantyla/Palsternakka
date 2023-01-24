@@ -88,7 +88,7 @@ for i, doc_idx in enumerate(hits_list):
 def getquery():
     
     while True:
-        query = input("Enter a search word: ")
+        query = input("Enter a search word or press enter to end the query:")
         if len(query) != 0:
             break
         test_query(query)
