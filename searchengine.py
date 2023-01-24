@@ -11,19 +11,8 @@ documents = ["This is a silly example",
 
 cv = CountVectorizer(lowercase=True, binary=True)
 sparse_matrix = cv.fit_transform(documents)
-
-print("Term-document matrix: (?)\n")
-print(sparse_matrix)
-
 dense_matrix = sparse_matrix.todense()
-
-print("Term-document matrix: (?)\n")
-print(dense_matrix)
-
 td_matrix = dense_matrix.T   # .T transposes the matrix
-
-print("Term-document matrix:\n")
-print(td_matrix)
 
 terms = cv.get_feature_names_out()
 
@@ -55,11 +44,6 @@ def test_query(query):
     print("Matching:", eval(rewrite_query(query))) # Eval runs the string as a Python command
     print()
 
-test_query("example AND NOT nothing")
-test_query("NOT example OR great")
-test_query("( NOT example OR great ) AND nothing") # AND, OR, NOT can be written either in ALLCAPS
-test_query("( not example or great ) and nothing") # ... or all small letters
-test_query("not example and not nothing")
 
 sparse_td_matrix = sparse_matrix.T.tocsr()
 print(sparse_td_matrix)
@@ -67,31 +51,35 @@ print(sparse_td_matrix)
 def rewrite_token(t):
     return d.get(t, 'sparse_td_matrix[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
 
-test_query("NOT example OR great")
 
-hits_matrix = eval(rewrite_query("NOT example OR great"))
-print("Matching documents as vector (it is actually a matrix with one single row):", hits_matrix)
-print("The coordinates of the non-zero elements:", hits_matrix.nonzero())    
+# Perform the queries on the documents and print the contents of the matching documents
 
-hits_list = list(hits_matrix.nonzero()[1])
-print(hits_list)
+def printContents(query):
+    
+    hits_matrix = eval(rewrite_query(query))
+    print("Matching documents as vector (it is actually a matrix with one single row):", hits_matrix)
+    print("The coordinates of the non-zero elements:", hits_matrix.nonzero())    
 
-for doc_idx in hits_list:
-    print("Matching doc:", documents[doc_idx])
+    hits_list = list(hits_matrix.nonzero()[1])
+    print(hits_list)
 
-for i, doc_idx in enumerate(hits_list):
-    print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx]))
+    for doc_idx in hits_list:
+        print("Matching doc:", documents[doc_idx])
+
+    for i, doc_idx in enumerate(hits_list):
+        print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx]))
 
 
 # Asking user for a query. Feel free to change the function name/location etc.
 
 def getquery():
-    
     while True:
-        query = input("Enter a search word or press enter to end the query:")
-        if len(query) != 0:
+        query = input("Enter a search word or press enter to end the query: ")
+        if len(query) == 0:
             break
-        test_query(query)
+        printContents(query)
 
+# Runs the program
+getquery()
 
 
