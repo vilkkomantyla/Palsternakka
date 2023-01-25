@@ -7,8 +7,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 documents = ["This is a silly example",
              "A better example",
              "Nothing to see here",
-             "This is a great and long example"]
+             "This is a great and long example",]
 
+             
 cv = CountVectorizer(lowercase=True, binary=True)
 sparse_matrix = cv.fit_transform(documents)
 dense_matrix = sparse_matrix.todense()
@@ -63,11 +64,13 @@ def printContents(query):
     hits_list = list(hits_matrix.nonzero()[1])
     print(hits_list)
 
-    for doc_idx in hits_list:
-        print("Matching doc:", documents[doc_idx])
+    print("There are", len(hits_list), "matching documents")
 
+    counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
-        print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx]))
+        if counter < 5:
+            print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
+            counter += 1
 
 
 # Asking user for a query. Feel free to change the function name/location etc.
