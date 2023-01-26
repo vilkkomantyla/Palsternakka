@@ -28,9 +28,9 @@ print(td_matrix[t2i["example"]])
 # Parentheses are left untouched
 # Everything else is interpreted as a term and fed through td_matrix[t2i["..."]]
 
-d = {"and": "&", "AND": "&",
-     "or": "|", "OR": "|",
-     "not": "1 -", "NOT": "1 -",
+d = {"AND": "&",            # all tokens in documents are lowercased, so "and" means the token "and" in a document, and capital "AND" means the operator '&'
+     "OR": "|",
+     "NOT": "1 -",
      "(": "(", ")": ")"}          # operator replacements
 
 def rewrite_token(t):
@@ -56,6 +56,7 @@ def rewrite_token(t):
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):
+
     
     hits_matrix = eval(rewrite_query(query))
     print("Matching documents as vector (it is actually a matrix with one single row):", hits_matrix)
@@ -64,6 +65,7 @@ def printContents(query):
     hits_list = list(hits_matrix.nonzero()[1])
     print(hits_list)
 
+    print()
     print("There are", len(hits_list), "matching documents")
 
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
@@ -71,13 +73,16 @@ def printContents(query):
         if counter < 5:
             print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
             counter += 1
+    print()
 
 
 # Asking user for a query. Feel free to change the function name/location etc.
 
 def getquery():
     while True:
-        query = input("Enter a search word or press enter to end the query: ")
+        query = input("Enter a search word or press enter to end the query.\n"
+                      "AND, OR, NOT operators must be written in capitals,"
+                      'for example "word1 OR word2".\n')
         if len(query) == 0:
             break
         printContents(query)
