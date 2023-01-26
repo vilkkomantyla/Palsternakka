@@ -2,8 +2,19 @@
 
 # Copy relevant code.
 
+
 from sklearn.feature_extraction.text import CountVectorizer
 
+
+# Read text from the file. I'm not sure how to make the contents
+# into a list of strings where each string is one article.
+
+with open("wikipedia_documents.txt") as open_file:
+    contents = open_file.read()
+    documents = []
+    #and something here
+    
+    
 documents = ["This is a silly example",
              "A better example",
              "Nothing to see here",
@@ -76,7 +87,7 @@ def printContents(query):
     print()
 
 
-# Asking user for a query. Feel free to change the function name/location etc.
+# Asking user for a query. 
 
 def getquery():
     while True:
