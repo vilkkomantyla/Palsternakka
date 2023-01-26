@@ -2,6 +2,7 @@
 
 # Import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+import re
 
 
 # Read the text from the Wikipedia file divides it into articles
@@ -30,9 +31,6 @@ d = {"AND": "&",            # all tokens in documents are lowercased, so "and" m
      "NOT": "1 -",
      "(": "(", ")": ")"}          # operator replacements
 
-def rewrite_token(t):
-    return d.get(t, 'td_matrix[t2i["{:s}"]]'.format(t)) # Can you figure out what happens here?
-
 def rewrite_query(query): # rewrite every token in the query
     return " ".join(rewrite_token(t) for t in query.split())
 
@@ -45,14 +43,39 @@ def test_query(query):
 
 sparse_td_matrix = sparse_matrix.T.tocsr()
 def rewrite_token(t):
-    return d.get(t, 'sparse_td_matrix[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
-
-
+    if (t not in d) and (t not in t2i):     # if the token is not found in the documents
+        return 'UNKNOWN'
+    else:
+        return d.get(t, 'sparse_td_matrix[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
+    
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):
-    hits_matrix = eval(rewrite_query(query))
-    hits_list = list(hits_matrix.nonzero()[1])
+    if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
+        hits_matrix = eval(rewrite_query(query))
+        hits_list = list(hits_matrix.nonzero()[1])
+    else:                                             # if there is at least one unknown word in the query        
+        # In the next block UNKNOWN words in the query do not affect the final search results because the words are separated by OR.
+        # If there is at least one word in the query that is NOT unknown, the known words will determine the matching documents       
+        if re.match(r'\w+( OR \w+)+$', query):          # the query consists of tokens separated by OR, e.g. "word1 OR word2 OR word3"
+            known_words = []                #this list will contain all the KNOWN words in user's query
+            for token in query.split(' OR '):       
+                if rewrite_query(token) != 'UNKNOWN':       # if the word is found in the documents, 
+                    known_words.append(token)                   # it will be appended to the list of KNOWN words
+            stripped_query = " | ".join(rewrite_token(t) for t in known_words)       # the new query will be stripped of unknown words
+            if len(known_words) == 0:    # if all the words in the query are unknown...
+                hits_list = []              # there won't be any matches
+            else:
+                hits_matrix = eval(stripped_query)      # here the known words in the query will be evaluated as usual
+                hits_list = list(hits_matrix.nonzero()[1])
+        elif re.match(r'NOT \w+$', query):      # will match queries like "NOT word"
+            print(query)
+            hits_list = []
+            for i in range(100):
+                hits_list.append(i)
+        elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
+            hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
+    
     print("There are", len(hits_list), "matching documents")
 
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
