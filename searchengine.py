@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import re
 
 
-# Read the text from the Wikipedia file divides it into articles
+# Read the text from the Wikipedia file and divide it into articles
 with open("wikipedia_documents.txt", encoding="utf8") as open_file:
     contents = open_file.read()
     documentList = contents.split("</article>")
