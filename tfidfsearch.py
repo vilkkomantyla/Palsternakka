@@ -15,12 +15,14 @@ with open("wikipedia_documents.txt", encoding="utf8") as open_file:
 documents = documentList
 
 
-tfidf = TfidfVectorizer(lowercase=True, sublinear_tf=False, use_idf=False, norm=None) #the regex pattern defines which strings count as tokens
-tf_matrix1 = tfidf.fit_transform(documents).T.todense()
+tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")
+sparse_matrix = tfv.fit_transform(documents)
+dense_matrix = sparse_matrix.todense()
+tf_matrix1 = dense_matrix.T
 
-terms = tfidf.get_feature_names_out()
+terms = tfv.get_feature_names_out()
 
-t2i = tfidf.vocabulary_  # shorter notation: t2i = term-to-index
+t2i = tfv.vocabulary_  # shorter notation: t2i = term-to-index
 
 # Operators and/AND, or/OR, not/NOT become &, |, 1 -
 # Parentheses are left untouched
@@ -41,7 +43,7 @@ def test_query(query):
     print()
 
 
-sparse_td_matrix = tf_matrix1.T.tocsr()
+sparse_td_matrix = sparse_matrix.T.tocsr()
 def rewrite_token(t):
     if (t not in d) and (t not in t2i):     # if the token is not found in the documents
         return 'UNKNOWN'
@@ -75,16 +77,23 @@ def printContents(query):
                 hits_list.append(i)
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
-    
-    for i, nhits in enumerate(hits_list):
-        print("Example occurs", nhits, "time(s) in document:", documents[i])
 
+    """""
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
         if counter < 5:
             print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
             counter += 1
     print()
+    """""
+
+    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
+    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
+
+    print("\nMatched the following documents, ranked highest relevance first:")
+    for hits, i in ranked_hits_and_doc_ids:
+        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+        print()
 
 
 # Asking user for a query
