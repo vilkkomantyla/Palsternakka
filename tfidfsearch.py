@@ -3,6 +3,8 @@
 # Import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 import re
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # Read the text from the Wikipedia file and divide it into articles
@@ -12,15 +14,13 @@ with open("wikipedia_documents.txt", encoding="utf8") as open_file:
 
 documents = documentList
 
-             
-cv = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b") #the regex pattern defines which strings count as tokens
-sparse_matrix = cv.fit_transform(documents)
-dense_matrix = sparse_matrix.todense()
-td_matrix = dense_matrix.T   # .T transposes the matrix
 
-terms = cv.get_feature_names_out()
+tfidf = TfidfVectorizer(lowercase=True, sublinear_tf=False, use_idf=False, norm=None) #the regex pattern defines which strings count as tokens
+tf_matrix1 = tfidf.fit_transform(documents).T.todense()
 
-t2i = cv.vocabulary_  # shorter notation: t2i = term-to-index
+terms = tfidf.get_feature_names_out()
+
+t2i = tfidf.vocabulary_  # shorter notation: t2i = term-to-index
 
 # Operators and/AND, or/OR, not/NOT become &, |, 1 -
 # Parentheses are left untouched
@@ -41,7 +41,7 @@ def test_query(query):
     print()
 
 
-sparse_td_matrix = sparse_matrix.T.tocsr()
+sparse_td_matrix = tf_matrix1.T.tocsr()
 def rewrite_token(t):
     if (t not in d) and (t not in t2i):     # if the token is not found in the documents
         return 'UNKNOWN'
@@ -53,7 +53,7 @@ def rewrite_token(t):
 def printContents(query):
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
-        hits_list = list(hits_matrix.nonzero()[1])
+        hits_list = np.array(hits_matrix)[0]
     else:                                             # if there is at least one unknown word in the query        
         # In the next block UNKNOWN words in the query do not affect the final search results because the words are separated by OR.
         # If there is at least one word in the query that is NOT unknown, the known words will determine the matching documents       
@@ -76,7 +76,8 @@ def printContents(query):
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
     
-    print("There are", len(hits_list), "matching documents")
+    for i, nhits in enumerate(hits_list):
+        print("Example occurs", nhits, "time(s) in document:", documents[i])
 
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
