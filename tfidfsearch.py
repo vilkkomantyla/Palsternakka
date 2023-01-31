@@ -78,6 +78,15 @@ def printContents(query):
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
 
+    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
+    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
+
+    print("\nMatched the following documents, ranked highest relevance first:")
+    for hits, i in ranked_hits_and_doc_ids:
+        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+        print()
+
+    # Not sure if this is needed
     """""
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
@@ -87,13 +96,7 @@ def printContents(query):
     print()
     """""
 
-    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
-    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
-
-    print("\nMatched the following documents, ranked highest relevance first:")
-    for hits, i in ranked_hits_and_doc_ids:
-        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
-        print()
+    
 
 
 # Asking user for a query
