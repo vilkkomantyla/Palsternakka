@@ -58,6 +58,13 @@ def rewrite_token(t):
     else:
         return d.get(t, 'sparse_td_matrix_binary[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
     
+# Stem the query
+def stem_query(query):
+    stemmer = PorterStemmer()
+    query_stemmed = stemmer.stem(query)
+    print(query_stemmed)
+    return query_stemmed
+    
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):       # for matching approach
