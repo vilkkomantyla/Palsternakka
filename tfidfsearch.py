@@ -1,4 +1,4 @@
-# This is the document for the search engine utilizing tf-idf
+# This is the document for the search engine utilizing tf-idf (or boolean engine in case of boolean operators in the query)
 
 # Import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -15,14 +15,24 @@ with open("wikipedia_documents.txt", encoding="utf8") as open_file:
 documents = documentList
 
 
-tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")
-sparse_matrix = tfv.fit_transform(documents)
+tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")   # queries WITHOUT boolean operators
+sparse_matrix_tfv = tfv.fit_transform(documents)
+sparse_td_matrix_tfv = sparse_matrix_tfv.T.tocsr()
+
+cv = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b") # queries WITH boolean operators
+sparse_matrix_binary = cv.fit_transform(documents)
+sparse_td_matrix_binary = sparse_matrix_binary.T.tocsr()
+
+
+# maybe these aren't in use?
+''' 
 dense_matrix = sparse_matrix.todense()
 tf_matrix1 = dense_matrix.T
+'''
 
-terms = tfv.get_feature_names_out()
+terms = cv.get_feature_names_out()
 
-t2i = tfv.vocabulary_  # shorter notation: t2i = term-to-index
+t2i = cv.vocabulary_  # shorter notation: t2i = term-to-index
 
 # Operators and/AND, or/OR, not/NOT become &, |, 1 -
 # Parentheses are left untouched
@@ -42,20 +52,18 @@ def test_query(query):
     print("Matching:", eval(rewrite_query(query))) # Eval runs the string as a Python command
     print()
 
-
-sparse_td_matrix = sparse_matrix.T.tocsr()
 def rewrite_token(t):
     if (t not in d) and (t not in t2i):     # if the token is not found in the documents
         return 'UNKNOWN'
     else:
-        return d.get(t, 'sparse_td_matrix[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
+        return d.get(t, 'sparse_td_matrix_binary[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
     
 # Perform the queries on the documents and print the contents of the matching documents
 
-def printContents(query):
+def printContents(query):       # for matching approach
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
-        hits_list = np.array(hits_matrix)[0]
+        hits_list = list(hits_matrix.nonzero()[1])
     else:                                             # if there is at least one unknown word in the query        
         # In the next block UNKNOWN words in the query do not affect the final search results because the words are separated by OR.
         # If there is at least one word in the query that is NOT unknown, the known words will determine the matching documents       
@@ -78,26 +86,35 @@ def printContents(query):
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
 
-    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
-    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
-
-    print("\nMatched the following documents, ranked highest relevance first:")
-    for hits, i in ranked_hits_and_doc_ids:
-        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
-        print()
-
-    # Not sure if this is needed
-    """""
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
         if counter < 5:
             print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
             counter += 1
     print()
-    """""
 
-    
+def printContentsRanked(query):     # for ranking approach (tfidf)
 
+    # Vectorize query string
+    query_vec = tfv.transform([ query ]).tocsc()     # Using TfidfVectorizer on query string
+
+    # Cosine similarity
+    hits = np.dot(query_vec, sparse_td_matrix_tfv)
+
+    # Rank hits
+    ranked_hits_and_doc_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
+
+    # Output result
+    print("\nYour query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids)))
+    for hits, i in ranked_hits_and_doc_ids:
+        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+        print()
+
+    '''
+    hits_list = np.array(hits_matrix)[0]
+    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
+    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
+    '''
 
 # Asking user for a query
 def getquery():
@@ -108,7 +125,10 @@ def getquery():
         if len(query) == 0:
             print("Thank you!") # Ends the program by thanking the user :)
             break
-        printContents(query)
+        if ("AND" in query) or ("OR" in query) or ("NOT" in query):     # didn't know how to write this shorter :/
+            printContents(query)        # use boolean/binary engine (matching approach)
+        else:
+            printContentsRanked(query)  # use tfidf engine (ranking approach)
 
 
 # Runs the program
