@@ -5,6 +5,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 import re
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+from nltk import PunktSentenceTokenizer
 
 
 # Read the text from the Wikipedia file and divide it into articles
@@ -14,13 +17,33 @@ with open("wikipedia_documents.txt", encoding="utf8") as open_file:
 
 documents = documentList
 
+# Stem the documents
+def stem_documents():
+    stemmer = PorterStemmer()                       # Stemmer
+    stemmed_docs = []                               # Stemmed documents
+    for doc in documents:                           # Go through every document
+        token_words = word_tokenize(doc)            # Tokenize every word
+        stem_words = []                             # One document tokenized
+        for word in token_words:                    # Go through every word in tokenized words
+            stem_words.append(stemmer.stem(word))   # Append stemmed word into document
+            stem_words.append(" ")                  # White spaces between the words
+        stemmed_docs.append("".join(stem_words))    # Convert document (list) into string and append it to stemmed documents
+    return stemmed_docs
+
+# Stem the query
+def stem_query(query):
+    stemmer = PorterStemmer()
+    query_stemmed = stemmer.stem(query)
+    return query_stemmed
+
+stemmed_documents = stem_documents()
 
 tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")   # queries WITHOUT boolean operators
-sparse_matrix_tfv = tfv.fit_transform(documents)
+sparse_matrix_tfv = tfv.fit_transform(stemmed_documents)
 sparse_td_matrix_tfv = sparse_matrix_tfv.T.tocsr()
 
 cv = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b") # queries WITH boolean operators
-sparse_matrix_binary = cv.fit_transform(documents)
+sparse_matrix_binary = cv.fit_transform(stemmed_documents)
 sparse_td_matrix_binary = sparse_matrix_binary.T.tocsr()
 
 
@@ -43,7 +66,7 @@ d = {"AND": "&",            # all tokens in documents are lowercased, so "and" m
      "NOT": "1 -",
      "(": "(", ")": ")"}          # operator replacements
 
-def rewrite_query(query): # rewrite every token in the query
+def rewrite_query(query): # rewrite every token in the stemmed query
     return " ".join(rewrite_token(t) for t in query.split())
 
 def test_query(query):
@@ -58,13 +81,8 @@ def rewrite_token(t):
     else:
         return d.get(t, 'sparse_td_matrix_binary[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
     
-# Stem the query
-def stem_query(query):
-    stemmer = PorterStemmer()
-    query_stemmed = stemmer.stem(query)
-    print(query_stemmed)
-    return query_stemmed
-    
+
+
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):       # for matching approach
@@ -103,7 +121,7 @@ def printContents(query):       # for matching approach
 def printContentsRanked(query):     # for ranking approach (tfidf)
 
     # Vectorize query string
-    query_vec = tfv.transform([ query ]).tocsc()     # Using TfidfVectorizer on query string
+    query_vec = tfv.transform([query]).tocsc()     # Using TfidfVectorizer on query string
 
     # Cosine similarity
     hits = np.dot(query_vec, sparse_td_matrix_tfv)
@@ -132,7 +150,7 @@ def getquery():
         if len(query) == 0:
             print("Thank you!") # Ends the program by thanking the user :)
             break
-        if ("AND" in query) or ("OR" in query) or ("NOT" in query):     # didn't know how to write this shorter :/
+        if ("AND" or "NOT" or "OR") in query:
             printContents(query)        # use boolean/binary engine (matching approach)
         else:
             printContentsRanked(query)  # use tfidf engine (ranking approach)
