@@ -53,9 +53,7 @@ def rewrite_token(t):
 def printContents(query):
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
-        print(hits_matrix)
         hits_list = list(hits_matrix.nonzero()[1])
-        print(hits_list)
     else:                                             # if there is at least one unknown word in the query        
         # In the next block UNKNOWN words in the query do not affect the final search results because the words are separated by OR.
         # If there is at least one word in the query that is NOT unknown, the known words will determine the matching documents       
@@ -79,7 +77,6 @@ def printContents(query):
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
     
     print("There are", len(hits_list), "matching documents")
-    print(enumerate(hits_list))
 
     counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
