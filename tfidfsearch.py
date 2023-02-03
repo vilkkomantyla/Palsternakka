@@ -47,19 +47,9 @@ sparse_matrix_binary = cv.fit_transform(stemmed_documents)
 sparse_td_matrix_binary = sparse_matrix_binary.T.tocsr()
 
 
-# maybe these aren't in use?
-''' 
-dense_matrix = sparse_matrix.todense()
-tf_matrix1 = dense_matrix.T
-'''
-
 terms = cv.get_feature_names_out()
 
 t2i = cv.vocabulary_  # shorter notation: t2i = term-to-index
-
-# Operators and/AND, or/OR, not/NOT become &, |, 1 -
-# Parentheses are left untouched
-# Everything else is interpreted as a term and fed through td_matrix[t2i["..."]]
 
 d = {"AND": "&",            # all tokens in documents are lowercased, so "and" means the token "and" in a document, and capital "AND" means the operator '&'
      "OR": "|",
@@ -67,6 +57,7 @@ d = {"AND": "&",            # all tokens in documents are lowercased, so "and" m
      "(": "(", ")": ")"}          # operator replacements
 
 def rewrite_query(query): # rewrite every token in the stemmed query
+    query = stem_query(query)
     return " ".join(rewrite_token(t) for t in query.split())
 
 def test_query(query):
@@ -86,6 +77,7 @@ def rewrite_token(t):
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):       # for matching approach
+    query = stem_query(query)
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
         hits_list = list(hits_matrix.nonzero()[1])
@@ -119,6 +111,7 @@ def printContents(query):       # for matching approach
     print()
 
 def printContentsRanked(query):     # for ranking approach (tfidf)
+    query = stem_query(query)
 
     # Vectorize query string
     query_vec = tfv.transform([query]).tocsc()     # Using TfidfVectorizer on query string
