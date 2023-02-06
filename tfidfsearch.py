@@ -57,7 +57,8 @@ d = {"AND": "&",            # all tokens in documents are lowercased, so "and" m
      "(": "(", ")": ")"}          # operator replacements
 
 def rewrite_query(query): # rewrite every token in the stemmed query
-    query = stem_query(query)
+    if "\"" not in query: 
+        query = stem_query(query)
     return " ".join(rewrite_token(t) for t in query.split())
 
 def test_query(query):
@@ -77,7 +78,8 @@ def rewrite_token(t):
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):       # for matching approach
-    query = stem_query(query)
+    if "\"" not in query:
+        query = stem_query(query)
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
         hits_list = list(hits_matrix.nonzero()[1])
@@ -103,7 +105,7 @@ def printContents(query):       # for matching approach
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
 
-    counter = 0      # a counter to make sure that no more than five documents are printed (even if there were more matches)
+    counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
         if counter < 5:
             print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
@@ -111,7 +113,8 @@ def printContents(query):       # for matching approach
     print()
 
 def printContentsRanked(query):     # for ranking approach (tfidf)
-    query = stem_query(query)
+    if "\"" not in query:
+        query = stem_query(query)
 
     # Vectorize query string
     query_vec = tfv.transform([query]).tocsc()     # Using TfidfVectorizer on query string
@@ -144,9 +147,9 @@ def getquery():
             print("Thank you!") # Ends the program by thanking the user :)
             break
         if ("AND" or "NOT" or "OR") in query:
-            printContents(query)        # use boolean/binary engine (matching approach)
+            printContents(query)        # Use boolean/binary engine (matching approach)
         else:
-            printContentsRanked(query)  # use tfidf engine (ranking approach)
+            printContentsRanked(query)  # Use tfidf engine (ranking approach)
 
 
 # Runs the program
