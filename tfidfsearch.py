@@ -142,7 +142,8 @@ def getquery():
     while True:
         query = input("Enter a search word or press enter to end the query.\n"
                       "AND, OR, NOT operators must be written in capitals,"
-                      'for example "word1 OR word2".\n')
+                      'for example "word1 OR word2".\n'
+                      "Using quotation will return exact matches, otherwise stemming will be used\n")
         if len(query) == 0:
             print("Thank you!") # Ends the program by thanking the user :)
             break
