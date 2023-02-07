@@ -30,34 +30,52 @@ def stem_documents():
         stemmed_docs.append("".join(stem_words))    # Convert document (list) into string and append it to stemmed documents
     return stemmed_docs
 
-# Stem the query
-def stem_query(query):
-    stemmer = PorterStemmer()
-    query_stemmed = stemmer.stem(query)
-    return query_stemmed
-
 stemmed_documents = stem_documents()
 
-tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")   # queries WITHOUT boolean operators
-sparse_matrix_tfv = tfv.fit_transform(stemmed_documents)
-sparse_td_matrix_tfv = sparse_matrix_tfv.T.tocsr()
+# Stem the query
+def stem_query(query):    # works with multi word queries
+    stemmer = PorterStemmer()
+    token_words = word_tokenize(query)
+    stem_words = []
+    for token in token_words:
+        stem_words.append(stemmer.stem(token))
+    stemmed_query = (" ".join(stem_words))
+    return stemmed_query
 
-cv = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b") # queries WITH boolean operators
-sparse_matrix_binary = cv.fit_transform(stemmed_documents)
-sparse_td_matrix_binary = sparse_matrix_binary.T.tocsr()
+# Stem one token
+def stem_token(token):
+    stemmer = PorterStemmer()
+    token_stemmed = stemmer.stem(token)
+    return token_stemmed
 
 
-terms = cv.get_feature_names_out()
-t2i = cv.vocabulary_  # shorter notation: t2i = term-to-index
+# not stemmed / normal cv object
+cv = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b")
+sparse_td_matrix_binary = cv.fit_transform(documents).T.tocsr()
+t2i_cv = cv.vocabulary_
+
+# stemmed cv object
+cv_stemmed = CountVectorizer(lowercase=True, binary=True, token_pattern=r"(?u)\b\w+\b")
+sparse_td_matrix_binary_stemmed = cv_stemmed.fit_transform(stemmed_documents).T.tocsr()
+t2i_cv_stemmed = cv_stemmed.vocabulary_
+
+# not stemmed / normal tfv object
+tfv = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")
+sparse_td_matrix_tfv = tfv.fit_transform(documents).T.tocsr()
+#t2i_tfv = tfv.vocabulary_
+
+# stemmed tfv object
+tfv_stemmed = TfidfVectorizer(lowercase=True, sublinear_tf=True, use_idf=True, norm="l2")
+sparse_td_matrix_tfv_stemmed = tfv_stemmed.fit_transform(stemmed_documents).T.tocsr()
+#t2i_tfv_stemmed = tfv_stemmed.vocabulary_
+
 
 d = {"AND": "&",            # all tokens in documents are lowercased, so "and" means the token "and" in a document, and capital "AND" means the operator '&'
      "OR": "|",
      "NOT": "1 -",
      "(": "(", ")": ")"}          # operator replacements
 
-def rewrite_query(query): # rewrite every token in the stemmed query
-    if "\"" not in query: 
-        query = stem_query(query)
+def rewrite_query(query): # rewrite every token in the query
     return " ".join(rewrite_token(t) for t in query.split())
 
 def test_query(query):
@@ -67,18 +85,27 @@ def test_query(query):
     print()
 
 def rewrite_token(t):
-    if (t not in d) and (t not in t2i):     # if the token is not found in the documents
-        return 'UNKNOWN'
-    else:
-        return d.get(t, 'sparse_td_matrix_binary[t2i["{:s}"]].todense()'.format(t)) # Make retrieved rows dense
+    if t in d:      # if token is AND OR NOT operator
+        return d[t]
+
+    if "\"" in t:   # word surrounded by quotes / exact match wanted
+        t = t[1:-1] # remove surrounding quotes
+        if t in t2i_cv:
+            return 'sparse_td_matrix_binary[t2i_cv["{:s}"]].todense()'.format(t)
+        else:
+            return 'UNKNOWN'        #  if the token is not found in the documents
+    else:       # no quotes, look at the stemmed vocabulary
+        t = stem_token(t)
+        if t in t2i_cv_stemmed:
+            return 'sparse_td_matrix_binary_stemmed[t2i_cv_stemmed["{:s}"]].todense()'.format(t)
+        else:
+            return 'UNKNOWN'        #  if the token is not found in the documents
     
 
 
 # Perform the queries on the documents and print the contents of the matching documents
 
 def printContents(query):       # for matching approach
-    if "\"" not in query:
-        query = stem_query(query)
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
         hits_matrix = eval(rewrite_query(query))
         hits_list = list(hits_matrix.nonzero()[1])
@@ -104,6 +131,8 @@ def printContents(query):       # for matching approach
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
 
+    print("There are", len(hits_list), "matching documents")
+
     counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
         if counter < 5:
@@ -113,24 +142,31 @@ def printContents(query):       # for matching approach
 
 def printContentsRanked(query):     # For ranking approach (tfidf)
     if "\"" not in query:           # Choose the stemming method
-        query = stem_query(query)   
+        stemmed_query = stem_query(query)   
 
-    # Vectorize query string
-    query_vec = tfv.transform([query]).tocsc()      # Using TfidfVectorizer on query string
+        # Vectorize query string
+        query_vec = tfv_stemmed.transform([stemmed_query]).tocsc()      # Using TfidfVectorizer on stemmed query string
+        # Cosine similarity
+        hits = np.dot(query_vec, sparse_td_matrix_tfv_stemmed)
+    else:
+        # Vectorize query string
+        query_vec = tfv.transform([query]).tocsc()          # Use original/unstemmed query
+        # Cosine similarity
+        hits = np.dot(query_vec, sparse_td_matrix_tfv)
+        
+    # Rank hits and print results
+    try:
+        ranked_hits_and_doc_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
-    # Cosine similarity
-    hits = np.dot(query_vec, sparse_td_matrix_tfv)
-
-    # Rank hits
-    ranked_hits_and_doc_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
-
-    # Output result
-    print("\nYour query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids)))
-    for hits, i in ranked_hits_and_doc_ids:
-        # part = documents[i].find(query)
-        # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
-        print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
-        print()
+        # Output result
+        print("\nYour query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids)))
+        for hits, i in ranked_hits_and_doc_ids:
+            # part = documents[i].find(query)
+            # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
+            print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+            print()
+    except IndexError:      # only unknown words in query
+         print("No matching documents\n")
 
 
 # Asking user for a query
@@ -143,7 +179,7 @@ def getquery():
         if len(query) == 0:
             print("Thank you!") # Ends the program by thanking the user :)
             break
-        if ("AND" or "NOT" or "OR") in query:
+        if ("AND" in query) or ("OR" in query) or ("NOT" in query):
             printContents(query)        # Use boolean/binary engine (matching approach)
         else:
             printContentsRanked(query)  # Use tfidf engine (ranking approach)
