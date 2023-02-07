@@ -48,7 +48,6 @@ sparse_td_matrix_binary = sparse_matrix_binary.T.tocsr()
 
 
 terms = cv.get_feature_names_out()
-
 t2i = cv.vocabulary_  # shorter notation: t2i = term-to-index
 
 d = {"AND": "&",            # all tokens in documents are lowercased, so "and" means the token "and" in a document, and capital "AND" means the operator '&'
@@ -112,12 +111,12 @@ def printContents(query):       # for matching approach
             counter += 1
     print()
 
-def printContentsRanked(query):     # for ranking approach (tfidf)
-    if "\"" not in query:
-        query = stem_query(query)
+def printContentsRanked(query):     # For ranking approach (tfidf)
+    if "\"" not in query:           # Choose the stemming method
+        query = stem_query(query)   
 
     # Vectorize query string
-    query_vec = tfv.transform([query]).tocsc()     # Using TfidfVectorizer on query string
+    query_vec = tfv.transform([query]).tocsc()      # Using TfidfVectorizer on query string
 
     # Cosine similarity
     hits = np.dot(query_vec, sparse_td_matrix_tfv)
@@ -128,14 +127,11 @@ def printContentsRanked(query):     # for ranking approach (tfidf)
     # Output result
     print("\nYour query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids)))
     for hits, i in ranked_hits_and_doc_ids:
+        # part = documents[i].find(query)
+        # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
         print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
         print()
 
-    '''
-    hits_list = np.array(hits_matrix)[0]
-    hits_and_doc_ids = [ (hits, i) for i, hits in enumerate(hits_list) if hits > 0 ]
-    ranked_hits_and_doc_ids = sorted(hits_and_doc_ids, reverse=True)
-    '''
 
 # Asking user for a query
 def getquery():
