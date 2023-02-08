@@ -130,6 +130,15 @@ def printContents(query):       # for matching approach
                 hits_list.append(i)
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
+        elif re.match(r'"?\w+"? AND NOT "?\w+"?$', query):  # e.g. cat AND NOT dog, but at least one of the words is UNKNOWN
+            print("matched")
+            word_before_AND = re.match(r'("?\w+"?) AND', query)     # Creating a match object of the query and capturing the word before AND
+            #print(word_before_AND.groups()[0])
+            if rewrite_token(word_before_AND.groups()[0]) == "UNKNOWN":        # if the captured word before AND is UNKNOWN
+                hits_list = []                                  # no documents will match (because of AND)
+            else:                                               # if we end up in this block, the word after NOT must be unknown, e.g. cat AND NOT someunknownword
+                hits_matrix = eval(rewrite_query(word_before_AND.groups()[0]))  # word_before_AND alone defines the matching documents
+                hits_list = list(hits_matrix.nonzero()[1])
 
     print()
     print("There are", len(hits_list), "matching documents:")
