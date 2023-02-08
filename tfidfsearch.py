@@ -131,12 +131,15 @@ def printContents(query):       # for matching approach
         elif re.match(r'\w+( AND \w+)*$', query):    # the query consists of tokens separated by AND  (this block will also handle the case of only one unknown word!)
             hits_list = []      # AND operator requires that all words be known so there can never be matches if one word is unknown
 
-    print("There are", len(hits_list), "matching documents")
+    print()
+    print("There are", len(hits_list), "matching documents:")
+    print()
 
     counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
         if counter < 5:
-            print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:500]))       # only print the first 500 characters of each document
+            print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:100]))       # only print the first 100 characters of each document
+            print()
             counter += 1
     print()
 
@@ -159,12 +162,19 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         ranked_hits_and_doc_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
         # Output result
-        print("\nYour query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids)))
+        print("\nYour query '{:s}' matched {:d} documents.\n".format(query, len(ranked_hits_and_doc_ids)))
+        print("Printing the first ten documents, ranked highest relevance first:")
+        print()
+
+        count = 0
         for hits, i in ranked_hits_and_doc_ids:
+            if count < 10:
             # part = documents[i].find(query)
             # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
-            print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
-            print()
+                print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+                print()
+            count += 1
+
     except IndexError:      # only unknown words in query
          print("No matching documents\n")
 
