@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Palsternakka search engine</title>
+    </head>
+    <body>
+        <h1>Find relevant documents</h1>
+        <!--Reload the page with variable "query" in the URL-->
+        <form>
+          <input type="text" name="query" autofocus>
+	  <input type="radio" id="boolean" name="engine" value="boolean">
+	  <label for="boolean">Boolean engine</label><br>
+	  <input type="radio" id="ranking" name="engine" value="ranking">
+	  <label for="ranking">Ranking engine</label><br>
+          <input type="submit" value="Search">
+        </form>
+	{% if result_summary %}
+	<p>{{result_summary}}</p>
+	{% endif %}
+        <table>
+            <!--Go through each item in the "matches" variable sent from
+                search() function in the Flask app-->
+	    {% if matches %}
+            {% for item in matches %}
+            <tr>
+                <!--Display the name of the item based on the "name" key-->
+                <td>{{ item }}</td>
+            </tr>
+            <!--End for loop-->
+            {% endfor %}
+	    {% endif %}
+        </table>
+    </body>
+</html>
+                               
