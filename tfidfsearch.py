@@ -13,9 +13,8 @@ from nltk import PunktSentenceTokenizer
 # Read the text from the Wikipedia file and divide it into articles
 with open("wikipedia_documents.txt", encoding="utf8") as open_file:
     contents = open_file.read()
-    documentList = contents.split("</article>")
+    documents = contents.split("</article>")
 
-documents = documentList
 
 # Stem the documents
 def stem_documents():
@@ -146,8 +145,11 @@ def printContents(query):       # for matching approach
 
     counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
-        if counter < 5:
-            print("Matching doc #{:d}: {:s}".format(i, documents[doc_idx][:100]))       # only print the first 100 characters of each document
+        if counter < 10:
+            name_start= documents[doc_idx].find("\"") #Find the name of the article for nicer printing
+            name_end = documents[doc_idx].find(">")
+            print(f"Matching doc #{i+1} {documents[doc_idx][name_start:name_end]}: {documents[doc_idx][name_end+1:100]} ...") # only print the first 100 characters of each document
+            #The previous line is a bit messy, maybe we can make it nicer. I'm not sure how to print the hits in the searches for matching approach.
             print()
             counter += 1
     print()
@@ -178,9 +180,10 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         count = 0
         for hits, i in ranked_hits_and_doc_ids:
             if count < 10:
-            # part = documents[i].find(query)
-            # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
-                print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
+                part = documents[i].find(query)
+                name_start= documents[i].find("\"")
+                name_end = documents[i].find(">")
+                print("Score of \"" + query + "\" is {:.4f} in document {:s}: ... {:s} ... ".format(hits, documents[i][name_start:name_end], documents[i][part-50:part+50])) 
                 print()
             count += 1
 
