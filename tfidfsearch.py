@@ -140,7 +140,10 @@ def printContents(query):       # for matching approach
                 hits_list = list(hits_matrix.nonzero()[1])
 
     print()
-    print("There are", len(hits_list), "matching documents:")
+    if len(hits_list) > 0:
+        print("There are", len(hits_list), "matching documents:")
+    else:
+        print("There are no matching documents.")
     print()
 
     counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
@@ -167,6 +170,8 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         query_vec = tfv.transform([query]).tocsc()          # Use original/unstemmed query
         # Cosine similarity
         hits = np.dot(query_vec, sparse_td_matrix_tfv)
+        # Remove the surrounding quotes
+        query = query[1:-1]     
         
     # Rank hits and print results
     try:
@@ -188,7 +193,7 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
             count += 1
 
     except IndexError:      # only unknown words in query
-         print("No matching documents\n")
+         print("There are no matching documents.\n")
 
 
 # Asking user for a query
@@ -197,7 +202,7 @@ def getquery():
         query = input("Enter a search word or press enter to end the query.\n"
                       "AND, OR, NOT operators must be written in capitals,"
                       'for example "word1 OR word2".\n'
-                      "Using quotation will return exact matches, otherwise stemming will be used\n")
+                      "Using quotation will return exact matches, otherwise stemming will be used.\n")
         if len(query) == 0:
             print("Thank you!") # Ends the program by thanking the user :)
             break
