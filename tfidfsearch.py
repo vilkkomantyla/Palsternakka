@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk import PunktSentenceTokenizer
+import matplotlib.pyplot as plt
 
 
 # Read the text from the Wikipedia file and divide it into articles
@@ -180,6 +181,11 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         ranked_hits_and_doc_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
         # Output result
+        plt.figure()    # creating empty bar chart
+        plt.title('Most relevant documents')
+        names = []      # will contain article names to be shown in the bar chart
+        values = []     # will contain corresponding tfidf-scores to be shown in the bar chart
+        
         print("\nYour query '{:s}' matched {:d} documents.\n".format(query, len(ranked_hits_and_doc_ids)))
         print("Printing the first ten documents, ranked highest relevance first:")
         print()
@@ -196,9 +202,15 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
                     part = re.search(r"\W" + query.lower() + r"\W", documents[i].lower()).start()
                 name_start= documents[i].find("\"")
                 name_end = documents[i].find(">")
-                print("Score of \"" + query + "\" is {:.4f} in document {:s}: ... {:s} ... ".format(hits, documents[i][name_start:name_end], documents[i][part-50:part+50])) 
+                article_name = documents[i][name_start:name_end]
+                print("Score of \"" + query + "\" is {:.4f} in document {:s}: ... {:s} ... ".format(hits, article_name, documents[i][part-50:part+50])) 
                 print()
+                names.append(article_name)
+                values.append(hits)
+                
             count += 1
+        plt.bar(names[:5], values[:5])  # creating bar chart with article names and corresponding tfidf scores
+        plt.show()      # showing bar chart
 
     except IndexError:      # only unknown words in query
          print("There are no matching documents.\n")
