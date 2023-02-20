@@ -165,13 +165,15 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         query_vec = tfv_stemmed.transform([stemmed_query]).tocsc()      # Using TfidfVectorizer on stemmed query string
         # Cosine similarity
         hits = np.dot(query_vec, sparse_td_matrix_tfv_stemmed)
+        stemmed = True
     else:
         # Vectorize query string
         query_vec = tfv.transform([query]).tocsc()          # Use original/unstemmed query
         # Cosine similarity
         hits = np.dot(query_vec, sparse_td_matrix_tfv)
         # Remove the surrounding quotes
-        query = query[1:-1]     
+        query = query[1:-1]
+        stemmed = False
         
     # Rank hits and print results
     try:
@@ -185,7 +187,13 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         count = 0
         for hits, i in ranked_hits_and_doc_ids:
             if count < 10:
-                part = documents[i].find(query)
+                if stemmed:
+                    for token in word_tokenize(documents[i].lower()):
+                        if stem_token(token) == stemmed_query.lower():
+                            part = documents[i].lower().find(token)
+                            break
+                else:
+                    part = re.search(r"\W" + query.lower() + r"\W", documents[i].lower()).start()
                 name_start= documents[i].find("\"")
                 name_end = documents[i].find(">")
                 print("Score of \"" + query + "\" is {:.4f} in document {:s}: ... {:s} ... ".format(hits, documents[i][name_start:name_end], documents[i][part-50:part+50])) 
