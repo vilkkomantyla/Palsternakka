@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk import PunktSentenceTokenizer
+import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, request
 #Initialize Flask instance
@@ -15,7 +16,7 @@ app = Flask(__name__)
 
 
 # Read the text from the Wikipedia file and divide it into articles
-with open("wikipedia_documents.txt", encoding="utf8") as open_file:
+with open("static/wikipedia_documents.txt", encoding="utf8") as open_file:
     contents = open_file.read()
     documentList = contents.split("</article>")
 
@@ -146,7 +147,7 @@ def printContents(query):       # for matching approach
 
     matches = []
 
-    result_summary = "There are " + str(len(hits_list)) + " matching documents"
+    result_summary = ["There are " + str(len(hits_list)) + " matching documents"]
 
     counter = 0      # A counter to make sure that no more than five documents are printed (even if there were more matches)
     for i, doc_idx in enumerate(hits_list):
@@ -164,11 +165,15 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         query_vec = tfv_stemmed.transform([stemmed_query]).tocsc()      # Using TfidfVectorizer on stemmed query string
         # Cosine similarity
         hits = np.dot(query_vec, sparse_td_matrix_tfv_stemmed)
+        stemmed = True
     else:
         # Vectorize query string
         query_vec = tfv.transform([query]).tocsc()          # Use original/unstemmed query
         # Cosine similarity
         hits = np.dot(query_vec, sparse_td_matrix_tfv)
+        # Remove the surrounding quotes
+        query = query[1:-1]
+        stemmed = False
         
     # Rank hits and print results
     try:
@@ -177,32 +182,40 @@ def printContentsRanked(query):     # For ranking approach (tfidf)
         matches = []
 
         # Output result
-        result_summary = "Your query '{:s}' matched the following {:d} documents, ranked highest relevance first:\n".format(query, len(ranked_hits_and_doc_ids))
+
+        plt.figure()    # creating empty bar chart
+        plt.title('Most relevant documents')
+        names = []      # will contain article names to be shown in the bar chart
+        values = []     # will contain corresponding tfidf-scores to be shown in the bar chart
+        
+        result_summary = ["Your query '{:s}' matched {:d} documents.\n".format(query, len(ranked_hits_and_doc_ids)),
+                          "Printing the first ten documents, ranked highest relevance first:"]
+        count = 0
         for hits, i in ranked_hits_and_doc_ids:
-            # part = documents[i].find(query)
-            # print("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][part-20:part+20]))
-            matches.append("Score of \"" + query + "\" is {:.4f} in document: {:s}".format(hits, documents[i][15:100]))
-            print()
+            if count < 10:
+                if stemmed:
+                    for token in word_tokenize(documents[i].lower()):
+                        if stem_token(token) == stemmed_query.lower():
+                            part = documents[i].lower().find(token)
+                            break
+                else:
+                    part = re.search(r"\W" + query.lower() + r"\W", documents[i].lower()).start()
+                name_start= documents[i].find("\"")
+                name_end = documents[i].find(">")
+                article_name = documents[i][name_start:name_end]
+                matches.append("Score of \"" + query + "\" is {:.4f} in document {:s}: ... {:s} ... ".format(hits, article_name, documents[i][part-50:part+50]))
+                names.append(article_name)
+                values.append(hits)
+            count += 1
+            
+        plt.bar(names[:5], values[:5])  # creating bar chart with article names and corresponding tfidf scores
+        plt.savefig('static/bar_chart.png')
+        
     except IndexError:      # only unknown words in query
         result_summary = None
         matches = ["No matching documents"]
     return matches, result_summary
 
-
-# Asking user for a query
-def getquery():         # isn't this part pretty much unnecessary in the GUI?
-    while True:
-        query = input("Enter a search word or press enter to end the query.\n"
-                      "AND, OR, NOT operators must be written in capitals,"
-                      'for example "word1 OR word2".\n'
-                      "Using quotation will return exact matches, otherwise stemming will be used\n")
-        if len(query) == 0:
-            print("Thank you!") # Ends the program by thanking the user :)
-            break
-        if ("AND" in query) or ("OR" in query) or ("NOT" in query):
-            printContents(query)        # Use boolean/binary engine (matching approach)
-        else:
-            printContentsRanked(query)  # Use tfidf engine (ranking approach)
 
 @app.route('/')
 def hello_world():
@@ -222,6 +235,3 @@ def search():
     #Render index.html with matches variable
     return render_template('index.html', matches=matches, result_summary=result_summary)
 
-
-# Runs the program
-# getquery()

@@ -8,15 +8,17 @@
       <p>Enter a search word or press enter to end the query. AND, OR, NOT operators must be written in capitals, for example "word1 OR word2". Using quotation will return exact matches, otherwise stemming will be used.</p>
         <!--Reload the page with variable "query" in the URL-->
         <form>
-          <input type="text" name="query" autofocus>
+          <input type="text" name="query" autofocus><br>
 	  <input type="radio" id="boolean" name="engine" value="boolean">
-	  <label for="boolean">Boolean engine</label><br>
+	  <label for="boolean">Boolean engine</label>
 	  <input type="radio" id="ranking" name="engine" value="ranking">
 	  <label for="ranking">Ranking engine</label><br>
           <input type="submit" value="Search">
         </form>
 	{% if result_summary %}
-	<p>{{result_summary}}</p>
+	{% for sentence in result_summary %}
+	{{sentence}}<br> <!--Insert a line break between two sentences-->
+	{% endfor %}
 	{% endif %}
         <table>
             <!--Go through each item in the "matches" variable sent from
@@ -29,8 +31,9 @@
             </tr>
             <!--End for loop-->
             {% endfor %}
-	    {% endif %}
         </table>
+	<img src='/static/bar_chart.png'>
+	    {% endif %}
     </body>
 </html>
                                
