@@ -8,6 +8,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk import PunktSentenceTokenizer
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, request
