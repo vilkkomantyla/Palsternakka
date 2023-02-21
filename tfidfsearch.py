@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 # Read the text from the Wikipedia file and divide it into articles
-with open("wikipedia_documents.txt", encoding="utf8") as open_file:
+with open("static/wikipedia_documents.txt", encoding="utf8") as open_file:
     contents = open_file.read()
     documents = contents.split("</article>")
 
