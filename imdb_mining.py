@@ -32,6 +32,10 @@ def get_summary(movie, soup):
     summary = soup.find(class_="sc-6cc92269-0 iNItSZ").string   # Summary of the movie
     return summary
 
+def get_year(movie, soup):
+    year = str(soup.title)
+    year = year[-20:-16]
+    return year
 
 # ************
 # MAIN PROGRAM
@@ -48,6 +52,10 @@ def main():
         # Title
         title = get_title(movie, soup)
         moviedata["Title"] = title
+
+        # Year
+        year = get_year(movie, soup)
+        moviedata["Year"] = year
 
         # Actors
         actors = get_actors(movie, soup)
