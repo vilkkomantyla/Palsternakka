@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Palsternakka search engine</title>
+    </head>
+    <body>
+        <p>Your search word can be a keyword, actor or genre.</p>
+        <form>
+            <input type="text" name="query" autofocus><br>
+            <input type="radio" id="keyword" name="engine" value="ranking">
+            <label for="keyword">Keyword</label>
+            <input type="radio" id="actor" name="engine" value="boolean">
+            <label for="actor">Actor</label><br>
+            <input type="radio" id="genre" name="engine" value="boolean">
+            <label for="genre">Genre</label>
+            <input type="submit" value="Search">
+        </form>
+        {% if result_summary %}
+	    {% for sentence in result_summary %}
+	    {{sentence}}<br> <!--Insert a line break between two sentences-->
+        {% endfor %}
+        {% endif %}
+        <table>
+            <!--Go through each item in the "matches" variable sent from
+                search() function in the Flask app-->
+	    {% if matches %}
+            {% for item in matches %}
+            <tr>
+                <td>{{ item }}</td>
+            </tr>
+            <!--End for loop-->
+            {% endfor %}
+        </table>
+        {% endif %}
+    </body>
+</html>
