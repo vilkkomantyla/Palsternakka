@@ -69,4 +69,5 @@ def main():
 # The list where all the movies are stored
 data = []
 
+# Run the program
 main()
