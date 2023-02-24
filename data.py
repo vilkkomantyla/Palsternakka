@@ -72,7 +72,7 @@ def main():
         # Append a movie to the data
         data.append(moviedata)
 
-    print(data)
+    return data
 
 # The list where all the movies are stored
 data = []
