@@ -78,4 +78,3 @@ def main():
 data = []
 
 # Run the program
-main()
