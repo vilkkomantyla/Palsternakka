@@ -1,10 +1,10 @@
-import data
+import imdb_data
 from flask import Flask, render_template, request
 
 #Initialize Flask instance
 #app = Flask(__name__)
 
-data = data.main()
+data = imdb_data.main()
 
 print(data)
 

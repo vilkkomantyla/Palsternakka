@@ -1,6 +1,6 @@
-import data
+import imdb_data
 
-data = data.main()
+data = imdb_data.main()
 
 
 # ************************
