@@ -35,7 +35,7 @@ def get_summary(movie, soup):
 def get_year(movie, soup):
     year = str(soup.title)
     year = year[-20:-16]
-    return year
+    return int(year)
 
 # ************
 # MAIN PROGRAM
@@ -76,5 +76,3 @@ def main():
 
 # The list where all the movies are stored
 data = []
-
-# Run the program
