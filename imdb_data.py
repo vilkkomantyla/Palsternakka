@@ -37,6 +37,7 @@ def get_year(movie, soup):
     year = year[-20:-16]
     return int(year)
 
+
 # ************
 # MAIN PROGRAM
 # ************
