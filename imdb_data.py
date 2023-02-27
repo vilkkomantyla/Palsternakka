@@ -12,7 +12,10 @@ movies = ['The Shawshank Redemption (1994) - IMDb.html',
           'The Dark Knight (2008) - IMDb.html'
           'Forrest Gump (1994) - IMDb.html'
           'Fight Club (1999) - IMDb.html'
-          'Taru sormusten herrasta/ Kaksi tornia (2002) - IMDb']
+          'Taru sormusten herrasta/ Kaksi tornia (2002) - IMDb',
+          'Inception (2010) - IMDb.html',
+          'Imperiumin vastaisku (1980) - IMDb.html',
+          'Matrix (1999) - IMDb.html']
 
 # *********
 # FUNCTIONS
