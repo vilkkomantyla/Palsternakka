@@ -158,7 +158,7 @@ def rankingSearch(query):   # for keyword searches without booleans
         for hits, i in ranked_hits_and_summary_ids:
             movie_title = data[i]["Title"]
             summary = data[i]["Summary"]
-            matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}:{:s}".format(hits, movie_title, summary))
+            matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}: {:s}".format(hits, movie_title, summary))
             
     except IndexError:      # only unknown words in query
         result_summary = None
