@@ -12,7 +12,7 @@ movies = ['The Shawshank Redemption (1994) - IMDb.html',
           'The Dark Knight (2008) - IMDb.html'
           'Forrest Gump (1994) - IMDb.html'
           'Fight Club (1999) - IMDb.html'
-          'Taru sormusten herrasta/ Kaksi tornia (2002) - IMDb',
+          'Taru sormusten herrasta_ Kaksi tornia (2002) - IMDb.html',
           'Inception (2010) - IMDb.html',
           'Imperiumin vastaisku (1980) - IMDb.html',
           'Matrix (1999) - IMDb.html']
@@ -35,8 +35,9 @@ def get_genres(movie, soup):
     return genres
 
 def get_summary(movie, soup):
-    summary = soup.find(class_="sc-6cc92269-0 iNItSZ").string   # Summary of the movie
+    summary = soup.find(class_="sc-6cc92269-2 jWocDE").string   # Summary of the movie
     return summary
+#sc-6cc92269-0 iNItSZ
 
 def get_year(movie, soup):
     year = str(soup.title)
