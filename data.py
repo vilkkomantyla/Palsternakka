@@ -37,6 +37,9 @@ def get_year(movie, soup):
     year = year[-20:-16]
     return year
 
+
+
+
 # ************
 # MAIN PROGRAM
 # ************
@@ -73,6 +76,8 @@ def main():
         data.append(moviedata)
 
     return data
+    
+   
 
 # The list where all the movies are stored
 data = []
