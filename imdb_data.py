@@ -9,7 +9,10 @@ movies = ['The Shawshank Redemption (1994) - IMDb.html',
           'The Lord of the Rings_ The Return of the King (2003) - IMDb.html',
           'The Lord of the Rings_ The Fellowship of the Ring (2001) - IMDb.html',
           '12 Angry Men (1957) - IMDb.html',
-          'The Dark Knight (2008) - IMDb.html']
+          'The Dark Knight (2008) - IMDb.html'
+          'Forrest Gump (1994) - IMDb.html'
+          'Fight Club (1999) - IMDb.html'
+          'Taru sormusten herrasta/ Kaksi tornia (2002) - IMDb']
 
 # *********
 # FUNCTIONS
