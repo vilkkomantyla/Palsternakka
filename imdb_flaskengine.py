@@ -75,6 +75,14 @@ def findResultsGenre(query):
     result_summary = [f"There are {len(titles)} matches"]
     return titles, result_summary
 
+def findResultsYear(query):
+    titles = []
+    for movie in data:
+        if query == movie["Year"]:
+            titles.append(movie["Title"])
+    result_summary = [f"There are {len(titles)} matches"]
+    return titles, result_summary
+
 def checkForBooleans(query):
     if ("AND" in query) or ("OR" in query) or ("NOT" in query):
         return booleanSearch(query)
@@ -96,7 +104,7 @@ def rewrite_token(t):
     if t in t2i_cv_stemmed:
         return 'sparse_td_matrix_binary_stemmed[t2i_cv_stemmed["{:s}"]].todense()'.format(t)
     else:
-        return 'UNKNOWN'        #  if the token is not found in the documents
+        return 'UNKNOWN'        #  if the token is not found in the docum   ents
 
 def booleanSearch(query):   # for keyword searches with booleans
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
@@ -178,5 +186,7 @@ def search():
             matches, result_summary = findResultsGenre(query)
         elif request.args.get('engine') == "actor":
             matches, result_summary = findResultsActor(query)
+        elif request.args.get('engine') == "year":
+            matches, result_summary = findResultsYear(query)
     return render_template('index_uusi.html', matches=matches, result_summary=result_summary)
 

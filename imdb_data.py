@@ -42,7 +42,7 @@ def get_summary(movie, soup):
 def get_year(movie, soup):
     year = str(soup.title)
     year = year[-20:-16]
-    return int(year)
+    return year
 
 
 
