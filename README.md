@@ -11,6 +11,7 @@ This project was created by Silva Hilosuo, Ville-Veikko Mäntylä and Aino Vanha
  + Features
  + Installation
  + Usage
+ + Troubleshooting
  + Contributing
  + License
 
@@ -18,7 +19,10 @@ This project was created by Silva Hilosuo, Ville-Veikko Mäntylä and Aino Vanha
 
 #### Getting Started
 
-##### Prerequisites
+##### Requirements
+
+ This program requires the following modules:
+     
     
 
 ##### Installation
@@ -51,22 +55,23 @@ This project was created by Silva Hilosuo, Ville-Veikko Mäntylä and Aino Vanha
     you can write the queries using "AND", "OR, "NOT" operators written in ALLCAPS. The results for keyword search are ranked from most to least relevant, as the
     genre and actor search show all matching movies in no specific order.
 
+#### Troubleshooting
     
 
 #### Contributing
 
-    Do we need this?
+ Do we need this?
 
 
 #### License
 
-    Do we need this?
+ Do we need this?
     
 
 ##### Additional Information
 
-This project was created during the course *Building NLP applications* in [Helsinki University](https://www.helsinki.fi/fi).
-The movie database is from [IMDb.com](https://www.imdb.com).
+This project was created during the course *Building NLP applications* in [Helsinki University](https://www.helsinki.fi/fi).\
+The movie database is from [IMDb.com](https://www.imdb.com). \
 The libraries/programs?? used in this project:
 + [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 + [NLTK](https://www.nltk.org)
