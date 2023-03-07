@@ -1,32 +1,45 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Palsternakka search engine</title>
+        <title>The Palsternakka Search Engine</title>
+        <style>body{text-align: center;}</style>
+        <style>table{text-align: center;}</style>
+        <style>body{font-family: Georgia, 'Times New Roman', Times, serif;}</style>
     </head>
-    <body>
-        <p>Your search word can be a keyword, actor or genre.</p>
+    <body style="background-color:lavender;">
+        <br>
+        <h1>The Palsternakka Search Engine</h1>
+        <br>
+        <p>You can search for title, actor, genre, year or keyword.</p>
         <form>
             <input type="text" name="query" autofocus><br>
+            <br>
+            <input type="radio" id="title" name="engine" value="title">
+            <label for="title">Title</label>
             <input type="radio" id="keyword" name="engine" value="keyword">
             <label for="keyword">Keyword</label>
             <input type="radio" id="actor" name="engine" value="actor">
             <label for="actor">Actor</label><br>
             <input type="radio" id="genre" name="engine" value="genre">
             <label for="genre">Genre</label>
+            <input type="radio" id="year" name="engine" value="year">
+            <label for="year">Year</label><br>
+            <br>
             <input type="submit" value="Search">
         </form>
         {% if result_summary %}
 	    {% for sentence in result_summary %}
-	    {{sentence}}<br> <!--Insert a line break between two sentences-->
+	    <b>{{sentence}}</b><br> <!--Insert a line break between two sentences-->
         {% endfor %}
         {% endif %}
+        <br>
         <table>
             <!--Go through each item in the "matches" variable sent from
                 search() function in the Flask app-->
 	    {% if matches %}
             {% for item in matches %}
             <tr>
-                <td>{{ item }}</td>
+                <td> {{ item }} </td>
             </tr>
             <!--End for loop-->
             {% endfor %}

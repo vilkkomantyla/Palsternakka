@@ -75,6 +75,22 @@ def findResultsGenre(query):
     result_summary = [f"There are {len(titles)} matches"]
     return titles, result_summary
 
+def findResultsYear(query):
+    titles = []
+    for movie in data:
+        if query == movie["Year"]:
+            titles.append(movie["Title"])
+    result_summary = [f"There are {len(titles)} matches"]
+    return titles, result_summary
+
+def findResultsTitle(query):
+    titles = []
+    for movie in data:
+        if query.lower() == movie["Title"].lower():
+            titles.append(movie["Title"])
+    result_summary = [f"There are {len(titles)} matches"]
+    return titles, result_summary
+
 def checkForBooleans(query):
     if ("AND" in query) or ("OR" in query) or ("NOT" in query):
         return booleanSearch(query)
@@ -96,7 +112,7 @@ def rewrite_token(t):
     if t in t2i_cv_stemmed:
         return 'sparse_td_matrix_binary_stemmed[t2i_cv_stemmed["{:s}"]].todense()'.format(t)
     else:
-        return 'UNKNOWN'        #  if the token is not found in the documents
+        return 'UNKNOWN'        #  if the token is not found in the docum   ents
 
 def booleanSearch(query):   # for keyword searches with booleans
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
@@ -153,12 +169,16 @@ def rankingSearch(query):   # for keyword searches without booleans
     try:
         ranked_hits_and_summary_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
-        result_summary = ["Your query '{:s}' matched {:d} documents.".format(query, len(ranked_hits_and_summary_ids))]
+        result_summary = ["Your query '{:s}' matched {:d} movies:".format(query, len(ranked_hits_and_summary_ids))]
         matches = []
         for hits, i in ranked_hits_and_summary_ids:
             movie_title = data[i]["Title"]
             summary = data[i]["Summary"]
-            matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}: {:s}".format(hits, movie_title, summary))
+            score = "{:.4f}".format(hits)
+            matches.append(movie_title)
+            matches.append(summary)
+            matches.append(f"Relevance ranking: {score}")
+            # matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}: {:s}".format(hits, movie_title, summary))
             
     except IndexError:      # only unknown words in query
         result_summary = None
@@ -178,5 +198,9 @@ def search():
             matches, result_summary = findResultsGenre(query)
         elif request.args.get('engine') == "actor":
             matches, result_summary = findResultsActor(query)
+        elif request.args.get('engine') == "year":
+            matches, result_summary = findResultsYear(query)
+        elif request.args.get('engine') == "title":
+            matches, result_summary = findResultsTitle(query)
     return render_template('index_uusi.html', matches=matches, result_summary=result_summary)
 
