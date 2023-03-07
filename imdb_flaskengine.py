@@ -154,7 +154,10 @@ def booleanSearch(query):   # for keyword searches with booleans
     for i, summary_idx in enumerate(hits_list):
         movie_title = data[summary_idx]["Title"]
         summary = data[summary_idx]["Summary"]
-        matches.append("Matching movie #{:d}: {:s}:{:s}".format(i, movie_title, summary))
+        summary = summary[summary.find(">")+1:]
+        matches.append("Matching movie #{:d}:".format(i))
+        matches.append(movie_title)
+        matches.append(summary)
     return matches, result_summary
 
 
