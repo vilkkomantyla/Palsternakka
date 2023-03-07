@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
+from urllib.request import Request, urlopen
+import re
 
-movies = ['The Shawshank Redemption (1994) - IMDb.html',
+'''movies = ['The Shawshank Redemption (1994) - IMDb.html',
           'The Good, the Bad and the Ugly (1966) - IMDb.html',
           'The Godfather (1972) - IMDb.html',
           'The Godfather Part II (1974) - IMDb.html',
@@ -16,6 +18,29 @@ movies = ['The Shawshank Redemption (1994) - IMDb.html',
           'Inception (2010) - IMDb.html',
           'Imperiumin vastaisku (1980) - IMDb.html',
           'Matrix (1999) - IMDb.html']
+'''
+
+'''
+req = Request(
+    url="https://www.imdb.com/title/tt0111161/",
+    headers={'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-Us,en;q=0.5'}
+)
+webpage = urlopen(req).read().decode('utf8')
+movies = [webpage]
+'''
+def get_urls():
+    req = Request(
+        url="https://www.imdb.com/chart/top/",
+        headers={'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-Us,en;q=0.5'}
+    )
+    webpage = urlopen(req).read().decode('utf8')
+    soup = BeautifulSoup(webpage, 'html.parser')
+    urls = []
+    rows = soup.tbody.find_all('tr')
+    for row in rows:
+        urls.append('https://www.imdb.com' + row.a['href'])
+    urls = urls[37:51]      # tätä voi muuttaa, jos haluaa testata eri määrällä leffoja tai eri kohdasta rankingia
+    return urls
 
 # *********
 # FUNCTIONS
@@ -34,10 +59,11 @@ def get_genres(movie, soup):
     genres = [tag.string for tag in soup.find_all(class_="ipc-chip__text")][:-1]    # Genres of the movie
     return genres
 
-def get_summary(movie, soup):
-    summary = soup.find(class_="sc-6cc92269-2 jWocDE").string   # Summary of the movie
+def get_summary(movie, soup, webpage):
+    #summary = soup.find(class_="sc-6cc92269-2 jWocDE").string   # Summary of the movie
+    result = re.search(r'"description":(".*"),"review":', webpage)
+    summary = result.group(1)
     return summary
-#sc-6cc92269-0 iNItSZ
 
 def get_year(movie, soup):
     year = str(soup.title)
@@ -54,11 +80,19 @@ def get_year(movie, soup):
 
 def main():
 
+    movies = get_urls()     # get_urls() palauttaa listan urleja
+    #for url in urls:
     for movie in movies:
         
         moviedata = {}      # A dictionary where the information of the movie is stored
-        with open('static/movies/' + movie, 'r', encoding='utf-8') as file:         # Open the html file of a movie
-            soup = BeautifulSoup(file, 'html.parser')       # Parse the html document with bs4
+       # with open('static/movies/' + movie, 'r', encoding='utf-8') as file:         # Open the html file of a movie
+        #    soup = BeautifulSoup(file, 'html.parser')       # Parse the html document with bs4
+        req = Request(
+            url=movie,
+            headers={'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-Us,en;q=0.5'}
+        )
+        webpage = urlopen(req).read().decode('utf8')
+        soup = BeautifulSoup(webpage, 'html.parser')
 
         # Title
         title = get_title(movie, soup)
@@ -77,15 +111,17 @@ def main():
         moviedata["Genres"] = genres
 
         # Summary
-        summary = get_summary(movie, soup)
+        summary = get_summary(movie, soup, webpage)
         moviedata["Summary"] = summary
+        #moviedata["Summary"] = title + > + summary
 
         # Append a movie to the data
         data.append(moviedata)
-
+#    print(data)
     return data
     
    
 
 # The list where all the movies are stored
 data = []
+#main()
