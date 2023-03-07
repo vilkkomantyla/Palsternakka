@@ -174,6 +174,7 @@ def rankingSearch(query):   # for keyword searches without booleans
         for hits, i in ranked_hits_and_summary_ids:
             movie_title = data[i]["Title"]
             summary = data[i]["Summary"]
+            summary = summary[summary.find(">")+1:]
             score = "{:.4f}".format(hits)
             matches.append(movie_title)
             matches.append(summary)
