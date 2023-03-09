@@ -7,6 +7,9 @@ import numpy as np
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk import PunktSentenceTokenizer
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 #Initialize Flask instance
 app = Flask(__name__)
@@ -75,22 +78,6 @@ def findResultsGenre(query):
     result_summary = [f"There are {len(titles)} matches"]
     return titles, result_summary
 
-def findResultsYear(query):
-    titles = []
-    for movie in data:
-        if query == movie["Year"]:
-            titles.append(movie["Title"])
-    result_summary = [f"There are {len(titles)} matches"]
-    return titles, result_summary
-
-def findResultsTitle(query):
-    titles = []
-    for movie in data:
-        if query.lower() == movie["Title"].lower():
-            titles.append(movie["Title"])
-    result_summary = [f"There are {len(titles)} matches"]
-    return titles, result_summary
-
 def checkForBooleans(query):
     if ("AND" in query) or ("OR" in query) or ("NOT" in query):
         return booleanSearch(query)
@@ -112,7 +99,7 @@ def rewrite_token(t):
     if t in t2i_cv_stemmed:
         return 'sparse_td_matrix_binary_stemmed[t2i_cv_stemmed["{:s}"]].todense()'.format(t)
     else:
-        return 'UNKNOWN'        #  if the token is not found in the docum   ents
+        return 'UNKNOWN'        #  if the token is not found in the documents
 
 def booleanSearch(query):   # for keyword searches with booleans
     if 'UNKNOWN' not in rewrite_query(query):         # if everything is normal and all the words of the query are found in the documents
@@ -149,20 +136,19 @@ def booleanSearch(query):   # for keyword searches with booleans
 
     matches = []
 
+
     result_summary = ["There are " + str(len(hits_list)) + " matching movies"]
 
     for i, summary_idx in enumerate(hits_list):
         movie_title = data[summary_idx]["Title"]
         summary = data[summary_idx]["Summary"]
-        summary = summary[summary.find(">")+1:]
-        matches.append("Matching movie #{:d}:".format(i))
-        matches.append(movie_title)
-        matches.append(summary)
+        matches.append("Matching movie #{:d}: {:s}:{:s}".format(i, movie_title, summary))
     return matches, result_summary
 
 
 def rankingSearch(query):   # for keyword searches without booleans
-    stemmed_query = stem_query(query)   
+    stemmed_query = stem_query(query)
+
 
     # Vectorize query string
     query_vec = tfv_stemmed.transform([stemmed_query]).tocsc()      # Using TfidfVectorizer on stemmed query string
@@ -172,22 +158,30 @@ def rankingSearch(query):   # for keyword searches without booleans
     try:
         ranked_hits_and_summary_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
-        result_summary = ["Your query '{:s}' matched {:d} movies:".format(query, len(ranked_hits_and_summary_ids))]
+        result_summary = ["Your query '{:s}' matched {:d} documents.".format(query, len(ranked_hits_and_summary_ids))]
         matches = []
+
+        #create a bar chart
+        plt.figure()
+        plt.title('Movies that best match your search:')
+        names = [] # will contain movie titles shown in the bar chart
+        values = [] # the tfidf-scores for the corresponding movie
+        
         for hits, i in ranked_hits_and_summary_ids:
             movie_title = data[i]["Title"]
             summary = data[i]["Summary"]
-            summary = summary[summary.find(">")+1:]
-            score = "{:.4f}".format(hits)
-            matches.append(movie_title)
-            matches.append(summary)
-            matches.append(f"Relevance ranking: {score}")
-            # matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}: {:s}".format(hits, movie_title, summary))
+            matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}:{:s}".format(hits, movie_title, summary))
+            names.append(movie_title)
+            values.append(hits)
+
+        plt.bar(names[:5], values[:5])  # creating bar chart with movie titles and corresponding tfidf scores
+        plt.savefig('static/bar_chart_movies.png')
             
     except IndexError:      # only unknown words in query
         result_summary = None
         matches = ["No matching documents"]
     
+
     return matches, result_summary
 
 @app.route('/search')
@@ -202,9 +196,5 @@ def search():
             matches, result_summary = findResultsGenre(query)
         elif request.args.get('engine') == "actor":
             matches, result_summary = findResultsActor(query)
-        elif request.args.get('engine') == "year":
-            matches, result_summary = findResultsYear(query)
-        elif request.args.get('engine') == "title":
-            matches, result_summary = findResultsTitle(query)
     return render_template('index_uusi.html', matches=matches, result_summary=result_summary)
 
