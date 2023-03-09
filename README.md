@@ -25,9 +25,8 @@ This file can be used to make sure all required modules are installed and up to 
 
 ```
 pip install -r requirements.txt
-
 ```
-   This installs all of the modules listed in our Python requirements file into the environment being used.
+This installs all of the modules listed in our Python requirements file into the environment being used.
    
 ### Usage
 
@@ -44,7 +43,6 @@ For **Windows**, write
 
 ```
 demoenv/Scripts/activate
-
 ```
 
 2. Run flask
