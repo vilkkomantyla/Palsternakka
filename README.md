@@ -33,7 +33,7 @@ This installs all of the modules listed in our Python requirements file into the
 1.  Activate your virtual environment.
 
 This project is run in a virtual environment. \
-To activate it, write the following code for`**Mac**:
+To activate it, write the following code for **Mac**:
 
 ```
 . demoenv/bin/activate
