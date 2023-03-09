@@ -1,6 +1,6 @@
 # Palsternakka
 
-A search engine for the top 250 movies on IMDb.com. User can search for title, genre, actors, year or by keywords.
+Palsternakka is a search engine for the top 250 movies on IMDb.com. The user can search for title, genre, actors, year or by keywords.
 
 ### About
 
@@ -8,14 +8,11 @@ This project was created by Silva Hilosuo, Ville-Veikko Mäntylä and Aino Vanha
 
 ### Table of contents
 
- + Features
  + Installation
  + Usage
  + Troubleshooting
- + Contributing
- + License
+ + Additional Information
 
-### Features
 
 ### Installation
 
@@ -26,10 +23,10 @@ This file can be used to make sure all required modules are installed and up to 
 
 2. Open a terminal and navigate to the directory of this project, Palsternakka. Once there, write the following code.
 
-    ```
-    pip install -r requirements.txt
+```
+pip install -r requirements.txt
 
-    ``
+```
    This installs all of the modules listed in our Python requirements file into the environment being used.
    
 ### Usage
@@ -39,25 +36,25 @@ This file can be used to make sure all required modules are installed and up to 
 This project is run in a virtual environment. \
 To activate it, write the following code for`**Mac**:
 
-    ```
-    . demoenv/bin/activate
-    ```
+```
+. demoenv/bin/activate
+```
 
 For **Windows**, write
 
-    ```
-    demoenv/Scripts/activate
+```
+demoenv/Scripts/activate
 
-    ``
+```
 
 2. Run flask
 
 By running flask we activate the HTTP server for us to use our search engine.
 In the terminal command line, type:
 
-    ```
-    flask run
-    ```
+```
+flask run
+```
 
 **NOTE!** Due to the large size of the data used, it might take up to 5-10 minutes for the server to load.
 
@@ -82,7 +79,7 @@ genre will unfortunately not generate a corresponding bar chart.
 
     
 
-#### Additional Information
+### Additional Information
 
 This project was created during the course *Building NLP applications* in [Helsinki University](https://www.helsinki.fi/fi).\
 The movie database is from [IMDb.com](https://www.imdb.com). \
