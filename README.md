@@ -17,9 +17,9 @@ This project was created by Silva Hilosuo, Ville-Veikko Mäntylä and Aino Vanha
 ### Installation
 
 This program requires certain modules to run smoothly. The required modules for this programme are included in the requirements.txt file.
-This file can be used to make sure all required modules are installed and up to date, by running a command on the computer terminal's command line.
+This file can be used to make sure all required modules are installed and up to date, by running a command on the terminal's command line.
 
-1. Firstly, clone this repository to your computer.
+1. Firstly, clone this repository.
 
 2. Open a terminal and navigate to the directory of this project, Palsternakka. Once there, write the following code.
 
@@ -39,7 +39,7 @@ To activate it, write the following code for **Mac**:
 . demoenv/bin/activate
 ```
 
-For **Windows**, write
+For **Windows**, write:
 
 ```
 demoenv/Scripts/activate
@@ -54,7 +54,7 @@ In the terminal command line, type:
 flask run
 ```
 
-**NOTE!** Due to the large size of the data used, it might take up to 5-10 minutes for the server to load.
+**NOTE!** Due to the large size of the data used in our search engine, it might take up to 5-10 minutes for the server to load.
 
 3. Navigate to `http://127.0.0.1:8000/search` on your browser. Like before, this will take a few minutes to load.
 
@@ -70,8 +70,8 @@ The search is case insensitive which means you can write in lowercase or upperca
 - If you search for something not in our system, the search will return "No matching documents". If your search doesn't return any text, make sure you have chosen one of the search methods
 of "actor", "year", "genre", "keyword", and "title".
 
-- For now, our search engine only prints a bar chart for one-word keyword searches. It will show that same chart until a new one-word keyword search is made. So notice that for example a search for
-genre will unfortunately not generate a corresponding bar chart.
+- For now, our search engine only prints a bar chart when you search for keyword with a one word query. It will show that same chart until a new keyword query of a single word is made. So notice that
+for example a search for genre or a search for keyword using boolean operators will unfortunately not generate a corresponding bar chart.
 
 - When searching for year, make sure to type the whole year, for example "1998" instead of "98".
 
