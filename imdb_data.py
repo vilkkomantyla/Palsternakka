@@ -31,7 +31,7 @@ def get_urls():
     rows = soup.tbody.find_all('tr')
     for row in rows:
         urls.append('https://www.imdb.com' + row.a['href'])
-    urls = urls[:8]      # tätä voi muuttaa, jos haluaa testata eri määrällä leffoja tai eri kohdasta rankingia
+    #urls = urls[:8]      # tätä voi muuttaa, jos haluaa testata eri määrällä leffoja tai eri kohdasta rankingia
     return urls
 
 # *********
