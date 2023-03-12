@@ -78,6 +78,14 @@ def findResultsGenre(query):
     result_summary = [f"There are {len(titles)} matches"]
     return titles, result_summary
 
+def findResultsYear(query):
+    titles = []
+    for movie in data:
+        if query == movie["Year"]:
+            titles.append(movie["Title"])
+    result_summary = [f"There are {len(titles)} matches"]
+    return titles, result_summary
+
 def checkForBooleans(query):
     if ("AND" in query) or ("OR" in query) or ("NOT" in query):
         return booleanSearch(query)
@@ -142,7 +150,10 @@ def booleanSearch(query):   # for keyword searches with booleans
     for i, summary_idx in enumerate(hits_list):
         movie_title = data[summary_idx]["Title"]
         summary = data[summary_idx]["Summary"]
-        matches.append("Matching movie #{:d}: {:s}:{:s}".format(i, movie_title, summary))
+        summary = summary[summary.find(">")+1:]
+        matches.append("Matching movie #{:d}:".format(i))
+        matches.append(movie_title)
+        matches.append(summary)
     return matches, result_summary
 
 
@@ -158,7 +169,7 @@ def rankingSearch(query):   # for keyword searches without booleans
     try:
         ranked_hits_and_summary_ids = sorted(zip(np.array(hits[hits.nonzero()])[0], hits.nonzero()[1]), reverse=True)
 
-        result_summary = ["Your query '{:s}' matched {:d} documents.".format(query, len(ranked_hits_and_summary_ids))]
+        result_summary = ["Your query '{:s}' matched {:d} movies.".format(query, len(ranked_hits_and_summary_ids))]
         matches = []
 
         #create a bar chart
@@ -170,7 +181,12 @@ def rankingSearch(query):   # for keyword searches without booleans
         for hits, i in ranked_hits_and_summary_ids:
             movie_title = data[i]["Title"]
             summary = data[i]["Summary"]
-            matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}:{:s}".format(hits, movie_title, summary))
+            summary = summary[summary.find(">")+1:]
+            score = "{:.4f}".format(hits)
+            matches.append(movie_title)
+            matches.append(summary)
+            matches.append(f"Relevance ranking: {score}")
+            #matches.append("Score of \"" + query + "\" is {:.4f} in movie {:s}:{:s}".format(hits, movie_title, summary))
             names.append(movie_title)
             values.append(hits)
 
@@ -196,5 +212,7 @@ def search():
             matches, result_summary = findResultsGenre(query)
         elif request.args.get('engine') == "actor":
             matches, result_summary = findResultsActor(query)
+        elif request.args.get('engine') == "year":
+            matches, result_summary = findResultsYear(query)
     return render_template('index_uusi.html', matches=matches, result_summary=result_summary)
 

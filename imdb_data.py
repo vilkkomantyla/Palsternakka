@@ -20,14 +20,6 @@ import re
           'Matrix (1999) - IMDb.html']
 '''
 
-'''
-req = Request(
-    url="https://www.imdb.com/title/tt0111161/",
-    headers={'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-Us,en;q=0.5'}
-)
-webpage = urlopen(req).read().decode('utf8')
-movies = [webpage]
-'''
 def get_urls():
     req = Request(
         url="https://www.imdb.com/chart/top/",
@@ -39,7 +31,7 @@ def get_urls():
     rows = soup.tbody.find_all('tr')
     for row in rows:
         urls.append('https://www.imdb.com' + row.a['href'])
-    #urls = urls[:8]      # tätä voi muuttaa, jos haluaa testata eri määrällä leffoja tai eri kohdasta rankingia
+    urls = urls[:8]      # tätä voi muuttaa, jos haluaa testata eri määrällä leffoja tai eri kohdasta rankingia
     return urls
 
 # *********
